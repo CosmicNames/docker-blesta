@@ -16,7 +16,7 @@ mkdir -p -m 0777 /var/lib/php/session
 
 # Set PHP timezone
 if [ -z "$PHPTZ" ]; then
-  PHPTZ="Europe/London"
+  PHPTZ="Detroit/America"
 fi
 echo date.timezone = $PHPTZ >>/etc/php.ini
 
@@ -33,43 +33,10 @@ echo zend_extension = /usr/local/ioncube/ioncube_loader_lin_$PHPVERSION.so >>/et
 # Install the WHMCS
 if [ ! -e /usr/share/nginx/html/.first-run-complete ]; then
   rm -f /usr/share/nginx/html/*.html
-  unzip /whmcs.zip -d /usr/share/nginx/html && mv /usr/share/nginx/html/whmcs/* /usr/share/nginx/html && rmdir /usr/share/nginx/html/whmcs
-  cat > /usr/share/nginx/html/configuration.php <<EOF
-<?php
-\$license = '${WHMCS_LICENSE:-nolicense}';
-\$db_host = '127.0.0.1';
-\$db_port = '3306';
-\$db_username = 'whmcs';
-\$db_password = 'whmcs';
-\$db_name = 'whmcs';
-\$cc_encryption_hash = 'uHHKBXgBnlfWNUe1boOaHdCBxEeLJOe3lLDMyJeLVjyz4Dr6S57p8zQv4V6DzbwL';
-\$templates_compiledir = 'templates_c';
-\$mysql_charset = 'utf8';
-?>
-EOF
-  chown nginx:nginx /usr/share/nginx/html/configuration.php && chmod 0777 /usr/share/nginx/html/configuration.php && chmod 0777 /usr/share/nginx/html/templates_c
-  rm -f /whmcs.zip
-TERM=dumb php -- "127.0.0.1" "whmcs" "whmcs" "whmcs" <<'EOPHP'
-<?php
-// database might not exist, so let's try creating it (just to be safe)
-$stderr = fopen('php://stderr', 'w');
-list($host, $port) = explode(':', $argv[1], 2);
-$maxTries = 10;
-do {
-    $mysql = new mysqli($host, $argv[2], $argv[3], '', (int)$port);
-    if ($mysql->connect_error) {
-        fwrite($stderr, "\n" . 'MySQL Connection Error: (' . $mysql->connect_errno . ') ' . $mysql->connect_error . "\n");
-        --$maxTries;
-        if ($maxTries <= 0) {
-            exit(1);
-        }
-        sleep(3);
-    }
-} while ($mysql->connect_error);
-$mysql->close();
-EOPHP
-  mysql -h 127.0.0.1 -D whmcs -pwhmcs < /dump.sql
-  rm -f /dump.sql
+  unzip /blesta-5.4.0.zip -d /tmp
+  mv /tmp/blesta-5.4.0/blesta/* /usr/share/nginx/html 
+  mv /tmp/blesta-5.4.0/uploads && rm -f /tmp/blesta-5.4.0
+  rm -f /blesta-5.4.0.zip
 
   echo "Do not remove this file." > /usr/share/nginx/html/.first-run-complete
 fi

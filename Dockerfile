@@ -1,25 +1,22 @@
-FROM centos:7
-MAINTAINER Aborilov Pavel (paborilov@cloudlinux.com)
+FROM almalinux:8.5
 
 ENV container docker
 
 # Install supervisord
 RUN \
-  yum update -y && \
-  yum install -y epel-release && \
-  yum install -y iproute python-setuptools hostname inotify-tools yum-utils which && \
-  yum clean all && \
-  easy_install supervisor
+  dnf update -y && \
+  dnf install -y epel-release && \
+  dnf install -y iproute supervisor hostname inotify-tools yum-utils which && \
+  dnf clean all
 
 # Install nginx
-RUN rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm && \
-yum -y install nginx
+RUN dnf -y install nginx
 
 # Install php-fpm etc as well as wget/unzip
-RUN yum -y install php-fpm php-mysql php-ldap php-cli php-mbstring php-pdo php-pear php-xml php-soap php-gd wget unzip mysql
+RUN dnf -y install php-fpm php-mysqlnd php-ldap php-cli php-mbstring php-pdo php-pear php-xml php-soap php-gd wget unzip mariadb-server
 
 # Get & extract ionCube Loader
-RUN wget -O /tmp/ioncube.tgz http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_5.1.2.tar.gz && tar -zxf /tmp/ioncube.tgz -C /tmp
+RUN wget -O /tmp/ioncube.tgz https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz && tar -zxf /tmp/ioncube.tgz -C /tmp
 
 # tweak php-fpm config
 RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" /etc/php.ini && \
@@ -50,9 +47,8 @@ ADD conf/supervisord.conf /etc/supervisord.conf
 ADD scripts/start.sh /start.sh
 RUN chmod 755 /start.sh
 
-# copy in WHMCS archive
-ADD src/whmcs.zip /whmcs.zip
-ADD src/dump.sql /dump.sql
+# Download Blesta
+RUN wget -P / https://account.blesta.com/client/plugin/download_manager/client_main/download/208/blesta-5.4.0.zip
 
 # fix permissions
 RUN chown -Rf nginx.nginx /usr/share/nginx/html/
