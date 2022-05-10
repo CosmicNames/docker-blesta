@@ -35,7 +35,7 @@ if [ ! -e /usr/share/nginx/html/.first-run-complete ]; then
   rm -f /usr/share/nginx/html/*.html
   unzip /blesta-5.4.0.zip -d /tmp
   mv /tmp/blesta-5.4.0/blesta/* /usr/share/nginx/html 
-  mv /tmp/blesta-5.4.0/uploads && rm -f /tmp/blesta-5.4.0
+  mv /tmp/blesta-5.4.0/uploads /usr/share/nginx/html && rm -f /tmp/blesta-5.4.0
   rm -f /blesta-5.4.0.zip
 
   echo "Do not remove this file." > /usr/share/nginx/html/.first-run-complete
